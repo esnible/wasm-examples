@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpbin
+  labels:
+    app: httpbin
+spec:
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 80
+  selector:
+    app: httpbin
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpbin
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: httpbin
+        version: v1
+      annotations:
+        # We can't use volumes/volumeMounts on the container, because it comes from
+        # the injector.  Specify here as serialized JSON.
+        # NOTE: This example ALWAYS mounts the "new-filter" ConfigMap to /var/local/wasm/new-filter.wasm
+        # You SHOULD customize so that you can use multiple Wasm modules on your pods
+        sidecar.istio.io/userVolume: '[{"name":"new-filter","configMap":{"name":"new-filter"}}]'
+        sidecar.istio.io/userVolumeMount: '[{"mountPath":"/var/local/wasm","name":"new-filter"}]'
+    spec:
+      containers:
+      - image: docker.io/kennethreitz/httpbin
+        imagePullPolicy: IfNotPresent
+        name: httpbin
+        ports:
+        - containerPort: 80

@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "asbuild:untouched": "asc --use abort=abort_proc_exit --sourceMap --debug",
+    "asbuild:optimized": "asc --use abort=abort_proc_exit --sourceMap --optimize"
+  },
+  "dependencies": {
+    "@assemblyscript/loader": "^0.14.8",
+    "@solo-io/proxy-runtime": "^0.1.8"
+  },
+  "devDependencies": {
+    "assemblyscript": "^0.14.8"
+  }
+}
