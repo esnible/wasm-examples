@@ -5,7 +5,7 @@ This example contains an Envoy filter that makes an external HTTP call and uses 
 of that call in the response returned for the original invocation to a microservice.
 
 This example is designed to be tested with the
-[Istio Httpbin sample](/istio/istio/tree/release-1.9/samples/httpbin).
+[Istio Httpbin sample](https://github.com/istio/istio/tree/release-1.9/samples/httpbin).
 This repo uses a modified version of it that mounts a ConfigMap as a .wasm file on the sidecar.
 To test this example, deploy Httpbin with
 

@@ -5,7 +5,7 @@ This example contains an Envoy filter that adds a header containing a unique seq
 to all responses from a server.
 
 This example is designed to be tested with the
-[Istio Httpbin sample](/istio/istio/tree/release-1.9/samples/httpbin).
+[Istio Httpbin sample](https://github.com/istio/istio/tree/release-1.9/samples/httpbin).
 This repo uses a modified version of it that mounts a ConfigMap as a .wasm file on the sidecar.
 To test this example, deploy Httpbin with
 

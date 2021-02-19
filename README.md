@@ -31,7 +31,7 @@ docker build -t wasmsdk:v2 -f Dockerfile-sdk .
 
 ## regex path replacer
 
-The [regexp replacer](regex-repl) example shows how to redirect the HTTP path of incoming requests to a server.
+The [regexp replacer](regexp-repl) example shows how to redirect the HTTP path of incoming requests to a server.
 
 ## sequence number
 
