@@ -8,7 +8,7 @@ set -o errexit
 
 if [ "$#" -lt 2 ]
 then
-  echo "Usage: update-wasm.sh <.wasm file> <root-id> [<config-string>]"
+  echo "Usage: sync-and-create-filter.sh <.wasm file> <root-id> [<config-string> [<filtername> [<workload> [<target>]]]]"
   exit 1
 fi
 
@@ -25,15 +25,17 @@ ROOT_ID=$2
 # The configuration value to give to the plugin (string, possibly JSON encoded)
 CONFIG_VALUE=${3:-"\"\""}
 # The Istio EnvoyFilter CR name, for example httpbin
-FILTERNAME=httpbin
-# The workload, for example "app=httpbin", something that could be passed to kubectl's --selector
-WORKLOAD=app=httpbin
-# The target, a pod or deployment (deployment should have one instance), for example "deployment/httpbin"
-TARGET=deployment/httpbin
+FILTERNAME=${4:-"httpbin"}
 # We keep this around after running in case you want to see it or used it to delete your filter.
-FILTERFILE="/tmp/httpbin-ef.yaml"
+FILTERFILE="/tmp/${FILTERNAME}-ef.yaml"
+# The workload, for example "app=httpbin", something that could be passed to kubectl's --selector
+WORKLOAD=${5:-"app=httpbin"}
+# The target, a pod or deployment (deployment should have one instance), for example "deployment/httpbin"
+TARGET=${6:-"deployment/httpbin"}
 
 # STEP 1.  Create the EnvoyFilter
+echo Creating Istio EnvoyFilter custom resource '"'${FILTERNAME}'"' in file ${FILTERFILE}.
+echo The EnvoyFilter '"'${FILTERNAME}'"' applies to workload '"' --selector ${WORKLOAD} '"'
 cat > "$FILTERFILE" << EOF
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
@@ -75,16 +77,10 @@ spec:
 EOF
 
 
-# STEP 2.  Recreate the ConfigMap holding the WASM.  (It would be better to patch it,
-# but I don't know how to do it when the file is big.  TODO!!!)
-echo Creating ConfigMap "$CONFIGMAP" from "$WASMFILE"
-if kubectl get configmap new-filter > /dev/null ; then
-   kubectl delete configmap new-filter || true
-fi
-kubectl create configmap new-filter --from-file=new-filter.wasm="$WASMFILE"
+# STEP 2 skipped.  For demo, ConfigMap already ready.
 
 # STEP 3. Wait until the pod has the exact byte codes we want, which may take up to a minute!
-echo "Waiting for binary to be loaded upon sidecar"
+echo "Waiting for binary to be loaded upon a least one sidecar in ${TARGET}"...
 until diff "$WASMFILE" <(kubectl exec "$TARGET" -c istio-proxy -- cat /var/local/wasm/new-filter.wasm) > /dev/null
 do
    sleep 5; echo continuing to wait...
@@ -99,3 +95,7 @@ kubectl apply -f "$FILTERFILE"
 echo ""
 echo attached root_id \"${ROOT_ID}\" Wasm to workload $WORKLOAD
 echo When $WASMFILE is started by Envoy, it will be configured with $CONFIG_VALUE
+echo To set the log level:
+echo "   " istioctl proxy-config log ${TARGET} --level wasm:trace
+echo View the logs with
+echo "   " kubectl logs ${TARGET} -c istio-proxy --follow

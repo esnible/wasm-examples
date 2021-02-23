@@ -29,10 +29,6 @@ type httpRegex struct {
 	rootContext *rootRegex
 }
 
-// Ensure our filter supports the correct interface
-var _ proxywasm.RootContext = &rootRegex{}
-var _ proxywasm.HttpContext = &httpRegex{}
-
 func main() {
 	proxywasm.LogWarnf("regex/main.go main() REACHED")
 
